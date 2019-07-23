@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-# Pylock v0.0.1
+
+'''
+Pylock v0.0.1
+
+Compile on MacOS with:
+pyinstaller -F -w -i images/icon.ico --hidden-import tkinter --hidden-import tkinter.ttk --hidden-import ttkthemes --hidden-import pymsgbox --hidden-import pycrypto --add-data 'images/bg.jpg:images' pylock.py
+'''
+
 import os, sys, time, hashlib, platform, getpass
 from tkinter import *
 from tkinter.ttk import *
@@ -10,6 +17,11 @@ from PIL import ImageTk, Image
 from Crypto import Random
 from Crypto.Cipher import AES
 from pymsgbox import *
+
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 def pad(s):
     return s + b"\0" * (AES.block_size - len(s) % AES.block_size)
@@ -46,14 +58,15 @@ class MainWindow(Tk):
         Tk.__init__(self)
         self.title(string = "Pylock v0.1")
         self.resizable(0,0)
-        #self.style = Style()
-        #self.style.theme_use("clam")
         self.ttkStyle = ThemedStyle()
         self.ttkStyle.set_theme("blue")
         self.configure(background = 'white')
-        icon = ImageTk.PhotoImage(Image.open('images/icon.png'))
+        '''
+        icon = ImageTk.PhotoImage(Image.open(resource_path('images/icon.png')))
         #icon = PhotoImage(file='icon.png') # <-- Linux and Windows only, the line above is for MacOS
         self.tk.call('wm', 'iconphoto', self._w, icon)
+        '''
+        self.eval('tk::PlaceWindow %s center' % self.winfo_pathname(self.winfo_id()))
         self.protocol("WM_DELETE_WINDOW", self.on_close_event)
 
         self.bind("<Escape>", self.exit) # Press ESC to quit app
@@ -68,7 +81,7 @@ class MainWindow(Tk):
             'encryptpassword' : StringVar(),
         }
 
-        photo = Image.open('images/bg.jpg')
+        photo = Image.open(resource_path('images/bg.jpg'))
         resized = photo.resize((280,280), Image.ANTIALIAS)
         photo = ImageTk.PhotoImage(resized)
 
@@ -144,7 +157,6 @@ class MainWindow(Tk):
         self.on_close_event()
 
     def on_close_event(self):
-        sys.exit(0)
         result = messagebox.askyesno("Are you sure?","Are you sure you want to exit?")
         if result == False:
             return
